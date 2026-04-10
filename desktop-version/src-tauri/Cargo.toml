@@ -1,0 +1,24 @@
+[package]
+name = "kuaizai-os"
+version = "1.0.0"
+description = "KUAIZAI_OS - 分布式AI助手"
+authors = ["XIAOKUAIZAI"]
+license = "MIT"
+repository = ""
+edition = "2021"
+rust-version = "1.70"
+
+[build-dependencies]
+tauri-build = { version = "1.5.1", features = [] }
+
+[dependencies]
+tauri = { version = "1.6.0", features = [ "window-show", "window-set-size", "shell-execute", "fs-write-file", "fs-read-file", "shell-sidecar", "window-set-always-on-top", "http-all", "fs-create-dir", "window-set-position", "window-hide", "window-create", "updater", "notification-all", "window-start-dragging", "window-set-decorations", "window-close", "fs-read-dir", "window-set-focus", "shell-open", "global-shortcut-all"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+screenshots = "0.8"
+base64 = "0.21"
+image = { version = "0.24", default-features = false, features = ["png"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

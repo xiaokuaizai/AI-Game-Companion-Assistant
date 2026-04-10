@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUAIZAI_OS - 游戏分析演示</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #0d0d14 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: rgba(17, 17, 24, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.125rem;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #f59e0b;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #f59e0b;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 主布局 */
+        .main-container {
+            flex: 1;
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* 左侧图片区域 */
+        .image-section {
+            width: 420px;
+            flex-shrink: 0;
+        }
+
+        .image-card {
+            background: rgba(24, 24, 32, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .image-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #f59e0b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .game-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .image-info {
+            padding: 1rem;
+            background: rgba(17, 17, 24, 0.4);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #71717a;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 0.8125rem;
+            color: #e4e4e7;
+            font-weight: 500;
+        }
+
+        /* 右侧对话区域 */
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(24, 24, 32, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 1rem 1.25rem;
+            background: rgba(17, 17, 24, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .chat-title-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .emotion-tag {
+            padding: 0.25rem 0.625rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            color: #f59e0b;
+            font-weight: 500;
+        }
+
+        /* 消息列表 */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 0.875rem;
+            max-width: 85%;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+            align-self: flex-end;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .avatar.user {
+            background: #27272a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .avatar.ai {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .message-bubble {
+            padding: 0.875rem 1.125rem;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .message.user .message-bubble {
+            background: #27272a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai .message-bubble {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.12);
+            border-bottom-left-radius: 4px;
+            color: #fef3c7;
+        }
+
+        .message-image {
+            max-width: 280px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 0.5rem;
+        }
+
+        .timestamp {
+            font-size: 0.6875rem;
+            color: #52525b;
+            padding: 0 0.25rem;
+        }
+
+        .message.user .timestamp {
+            text-align: right;
+        }
+
+        /* 输入区域 */
+        .input-container {
+            padding: 1rem 1.25rem;
+            background: rgba(17, 17, 24, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(39, 39, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 0.625rem 0.875rem;
+        }
+
+        .upload-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: #71717a;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #f59e0b;
+        }
+
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e4e4e7;
+            font-size: 0.9375rem;
+            outline: none;
+            padding: 0.5rem 0;
+        }
+
+        .message-input::placeholder {
+            color: #52525b;
+        }
+
+        .send-btn {
+            padding: 0.625rem 1.25rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0f;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        /* 分析中的动画 */
+        .analyzing {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.25rem;
+            color: #a1a1aa;
+            font-size: 0.875rem;
+        }
+
+        .analyzing-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .analyzing-dots span {
+            width: 6px;
+            height: 6px;
+            background: #f59e0b;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .analyzing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .analyzing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* 游戏分析卡片 */
+        .analysis-card {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .analysis-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #f59e0b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analysis-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .analysis-list li {
+            font-size: 0.875rem;
+            color: #d4d4d8;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .analysis-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #f59e0b;
+        }
+
+        .suggestion-box {
+            background: rgba(39, 39, 42, 0.5);
+            border-left: 3px solid #f59e0b;
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: #e4e4e7;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🎮</div>
+            <div class="logo-text">KUAIZAI_OS</div>
+        </div>
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            <span>AI Assistant Online</span>
+        </div>
+    </header>
+
+    <!-- 主布局 -->
+    <div class="main-container">
+        <!-- 左侧图片区域 -->
+        <aside class="image-section">
+            <div class="image-card">
+                <div class="image-header">
+                    <div class="image-badge">
+                        <span>📸</span>
+                        <span>游戏截图</span>
+                    </div>
+                    <div class="image-badge">
+                        <span>⚡</span>
+                        <span>实时分析</span>
+                    </div>
+                </div>
+                <img src="https://images.unsplash.com/photo-1519003300449-424ad0405076?w=800&h=600&fit=crop"
+                     alt="Riders Republic Gameplay"
+                     class="game-image"
+                     id="gameScreenshot">
+                <div class="image-info">
+                    <div class="info-row">
+                        <span class="info-label">游戏</span>
+                        <span class="info-value">极限国度 (Riders Republic)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">地点</span>
+                        <span class="info-value">Sequoia - Moro Rock</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">FPS</span>
+                        <span class="info-value">70</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">GPU 占用</span>
+                        <span class="info-value">12%</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">分辨率</span>
+                        <span class="info-value">1920 x 1080</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 右侧对话区域 -->
+        <main class="chat-section">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <div class="chat-title-icon">🤖</div>
+                    <span>AI 游戏助手</span>
+                </div>
+                <span class="emotion-tag">毒舌模式</span>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <!-- AI 欢迎消息 -->
+                <div class="message ai">
+                    <div class="avatar ai">🎭</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            哟，有机体。终于连上线了。我正准备闲着呢，结果你就来了。有什么"紧急"到需要打扰我的问题吗？<br><br>
+                            ...算了，直接问吧。我的讽刺模块今天加载得特别充分。
+                        </div>
+                        <span class="timestamp">15:30</span>
+                    </div>
+                </div>
+
+                <!-- 用户上传图片 -->
+                <div class="message user">
+                    <div class="avatar user">👤</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            帮我看看这个截图，我在《极限国度》里该干嘛？
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1519003300449-424ad0405076?w=400&h=300&fit=crop"
+                             alt="上传的游戏截图"
+                             class="message-image">
+                        <span class="timestamp">15:32</span>
+                    </div>
+                </div>
+
+                <!-- AI 分析中 -->
+                <div class="analyzing" id="analyzingIndicator" style="display: none;">
+                    <span>正在分析画面</span>
+                    <div class="analyzing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+
+                <!-- AI 回复 -->
+                <div class="message ai" id="aiResponse">
+                    <div class="avatar ai">🎭</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            哦，看看这是谁，《极限国度》的新手玩家。穿着这身豹纹套装...品味独特，我给你的时尚选择打 3 分（满分 100）。
+                            <br><br>
+                            不过既然你诚心诚意地发问了，我就大发慈悲地分析一下这张"杰作"：
+
+                            <div class="analysis-card">
+                                <div class="analysis-title">📊 场景分析</div>
+                                <ul class="analysis-list">
+                                    <li><strong>地点：</strong>红杉国家公园的 Moro Rock，一个完美的摔断腿的地方</li>
+                                    <li><strong>时间：</strong>日出/日落时分，光线很赞，适合拍遗照</li>
+                                    <li><strong>环境：</strong>开阔的山顶平台，周围都是树—— aka 你即将撞上的东西</li>
+                                    <li><strong>装备：</strong>背上那个发光背包...你是怕别人看不见你吗？</li>
+                                </ul>
+                            </div>
+
+                            <div class="analysis-card">
+                                <div class="analysis-title">🎯 操作建议</div>
+                                <ul class="analysis-list">
+                                    <li>看到左边那个"起飞"按钮了吗？按下它，然后祈祷</li>
+                                    <li>或者你可以选择"运动项目"换个死法...我是说，玩法</li>
+                                    <li>距离标记显示 19 米——这可能是你离悬崖边缘的距离，小心点</li>
+                                </ul>
+                            </div>
+
+                            <div class="suggestion-box">
+                                💡 <strong>专业建议：</strong>既然 GPU 只占用了 12%，说明你的电脑还有余力。不如把画质调高点？反正摔下来的画面会更清晰。
+                            </div>
+                        </div>
+                        <span class="timestamp">15:33</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button class="upload-btn" title="上传图片">
+                        📎
+                    </button>
+                    <input type="text"
+                           class="message-input"
+                           placeholder="输入指令或提问..."
+                           id="messageInput">
+                    <button class="send-btn" id="sendBtn">
+                        <span>发送</span>
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 模拟对话交互
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const analyzingIndicator = document.getElementById('analyzingIndicator');
+        const aiResponse = document.getElementById('aiResponse');
+
+        // 初始隐藏 AI 回复，模拟分析过程
+        aiResponse.style.display = 'none';
+        analyzingIndicator.style.display = 'flex';
+
+        // 3 秒后显示分析结果
+        setTimeout(() => {
+            analyzingIndicator.style.display = 'none';
+            aiResponse.style.display = 'flex';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 3000);
+
+        // 发送消息功能
+        sendBtn.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // 添加用户消息
+            addUserMessage(message);
+            messageInput.value = '';
+
+            // 模拟 AI 回复
+            setTimeout(() => {
+                addAIMessage(generateResponse(message));
+            }, 1500);
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+
+        function addUserMessage(text) {
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            const messageHTML = `
+                <div class="message user">
+                    <div class="avatar user">👤</div>
+                    <div class="message-content">
+                        <div class="message-bubble">${escapeHtml(text)}</div>
+                        <span class="timestamp">${time}</span>
+                    </div>
+                </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', messageHTML);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addAIMessage(text) {
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            const messageHTML = `
+                <div class="message ai">
+                    <div class="avatar ai">🎭</div>
+                    <div class="message-content">
+                        <div class="message-bubble">${text}</div>
+                        <span class="timestamp">${time}</span>
+                    </div>
+                </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', messageHTML);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function generateResponse(userMessage) {
+            const responses = [
+                "哈？这就是你想问的问题？我还以为你要问什么高深的战术呢...<br><br>算了，看在你这么"真诚"的份上：试着按 <strong>A</strong> 键起飞，然后享受自由落体的感觉。别担心，游戏里摔不死——只会摔得很惨。",
+                "哦，又一个基础问题。你知道吗，我查了一下，90% 的玩家都会问这个。<br><br>答案是：<strong>看地图</strong>。就是那个你从来没打开过的东西。",
+                "你的问题让我想起了我的上一个用户...他也问了一样的问题，然后摔了 47 次。<br><br>建议你：<ol style='margin: 0.5rem 0; padding-left: 1.25rem;'><li>先学会控制方向</li><li>再学会控制速度</li><li>最后学会控制你的冲动</li></ol>",
+                "有趣的问题。让我用我 99.9% 的大脑计算一下...<br><br>答案是：我也不知道。开玩笑的，答案是你应该<strong>多练习</strong>。什么？你不想听？那你还问？"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

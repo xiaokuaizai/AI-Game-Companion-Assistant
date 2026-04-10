@@ -74,6 +74,10 @@ AI-Game-Companion-Assistant/
 
 ![游戏分析演示](./docs/screenshot.png)
 
+## 🎬 视频演示
+
+📺 [Bilibili - AI游戏助手功能介绍与使用教程](https://www.bilibili.com/video/BV1NdQwB5EPc/)
+
 ## 🤝 贡献指南
 
 欢迎提交 Issue 和 PR！
